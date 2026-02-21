@@ -26,6 +26,7 @@
             width: auto;
         }
 
+        /* Das Display-Fenster */
         #display {
             position: absolute;
             top: 25%;
@@ -38,16 +39,17 @@
             align-items: center;
             font-weight: bold;
             font-size: 1.5rem;
-            color: #222; /* Standard: Schwarz/Dunkelgrau */
+            color: #222; /* Standardfarbe Schwarz */
             text-align: center;
             pointer-events: none;
             z-index: 10;
         }
 
-        /* Platzhalter für das Notruf-Piktogramm */
-        #emergency-icon {
+        /* Platzhalter für das Piktogramm */
+        #sos-pic {
             display: none;
-            width: 80px;
+            width: 120px; /* Breite des Piktogramms im Display */
+            height: auto;
             margin-bottom: 10px;
         }
 
@@ -56,26 +58,34 @@
             cursor: pointer;
             z-index: 20;
             border: none;
+            background: transparent;
         }
 
+        /* Weißer Einschaltknopf oben links */
         #btn-power-main {
             top: 5%;
             left: 15%;
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             background-color: white;
             border-radius: 50%;
-            box-shadow: 0 0 10px white;
+            box-shadow: 0 0 12px white;
         }
 
+        /* SOS-Taste */
         #btn-sos {
-            top: 1%; left: 0.5%; width: 7.5%; height: 16%;
-            background: transparent;
+            top: 1%;
+            left: 0.5%;
+            width: 7.5%;
+            height: 16%;
         }
 
+        /* E-Taste (Eingabe) */
         #btn-enter {
-            top: 58.5%; left: 92.3%; width: 5.8%; height: 11.5%;
-            background: transparent;
+            top: 58.5%;
+            left: 92.3%;
+            width: 5.8%;
+            height: 11.5%;
         }
     </style>
 </head>
@@ -83,8 +93,9 @@
 
 <div class="gsmr-wrapper">
     <img id="gsmr-img" src="off.png" alt="GSM-R">
+    
     <div id="display">
-        <img id="emergency-icon" src="dein_piktogramm.png" alt="SOS">
+        <img id="sos-pic" src="notruf_piktogramm.png" alt="SOS Icon">
         <div id="text-layer"></div>
     </div>
 
@@ -93,16 +104,17 @@
     <button id="btn-enter" class="btn" onclick="pressEnter()"></button>
 </div>
 
-<audio id="sos-sound" src="sos.mp3"></audio>
+<audio id="sos-audio" src="Nothaltauftrag.mp3"></audio>
 
 <script>
     let powerOn = false;
     let booting = false;
+    
     const img = document.getElementById('gsmr-img');
     const display = document.getElementById('display');
     const textLayer = document.getElementById('text-layer');
-    const sosIcon = document.getElementById('emergency-icon');
-    const sosAudio = document.getElementById('sos-sound');
+    const sosPic = document.getElementById('sos-pic');
+    const sosAudio = document.getElementById('sos-audio');
 
     function togglePower() {
         if (booting) return;
@@ -111,9 +123,9 @@
             booting = true;
             img.src = 'Ausgang.png';
             
-            // WICHTIG: Farbe explizit auf Schwarz zurücksetzen
+            // RESET: Schrift auf Schwarz und Piktogramm weg
             display.style.color = "#222"; 
-            sosIcon.style.display = "none";
+            sosPic.style.display = "none";
             textLayer.innerHTML = "SYSTEM STARTING...";
             
             setTimeout(() => {
@@ -129,28 +141,31 @@
     function powerOff() {
         powerOn = false;
         textLayer.innerHTML = "";
-        sosIcon.style.display = "none";
+        sosPic.style.display = "none";
         img.src = 'off.png';
-        if(sosAudio) { sosAudio.pause(); sosAudio.currentTime = 0; }
+        
+        // Ton stoppen beim Ausschalten
+        sosAudio.pause();
+        sosAudio.currentTime = 0;
     }
 
     function triggerEmergency() {
         if (!powerOn) return;
         
         // Ton abspielen
-        sosAudio.play().catch(e => console.log("Sound-Blockade durch Browser"));
+        sosAudio.play().catch(e => console.log("Audio-Fehler: Datei fehlt oder Browser blockt."));
         
-        // Piktogramm anzeigen (sobald du die Datei hochgeladen hast)
-        sosIcon.style.display = "block";
+        // Piktogramm einblenden
+        sosPic.style.display = "block";
+        textLayer.innerHTML = "NOTRUF AKTIV";
         
-        // Schrift bleibt schwarz, wie gewünscht
+        // Schriftfarbe bleibt Schwarz
         display.style.color = "#222"; 
-        textLayer.innerHTML = "NOTRUF";
     }
 
     function pressEnter() {
         if (!powerOn) return;
-        console.log("Eingabe");
+        console.log("E-Taste gedrückt (Eingabe)");
     }
 </script>
 
