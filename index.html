@@ -26,7 +26,6 @@
             width: auto;
         }
 
-        /* Das Display-Fenster */
         #display {
             position: absolute;
             top: 25%;
@@ -39,10 +38,17 @@
             align-items: center;
             font-weight: bold;
             font-size: 1.5rem;
-            color: #222;
+            color: #222; /* Standard: Schwarz/Dunkelgrau */
             text-align: center;
             pointer-events: none;
             z-index: 10;
+        }
+
+        /* Platzhalter für das Notruf-Piktogramm */
+        #emergency-icon {
+            display: none;
+            width: 80px;
+            margin-bottom: 10px;
         }
 
         .btn {
@@ -52,7 +58,6 @@
             border: none;
         }
 
-        /* NEU: Der Einschaltknopf (Weißer Punkt oben links) */
         #btn-power-main {
             top: 5%;
             left: 15%;
@@ -63,21 +68,13 @@
             box-shadow: 0 0 10px white;
         }
 
-        /* Notruf-Taste (Werte aus Screenshot) */
         #btn-sos {
-            top: 1%;
-            left: 0.5%;
-            width: 7.5%;
-            height: 16%;
+            top: 1%; left: 0.5%; width: 7.5%; height: 16%;
             background: transparent;
         }
 
-        /* E-Taste (Eingabe - Werte aus Screenshot) */
         #btn-enter {
-            top: 58.5%;
-            left: 92.3%;
-            width: 5.8%;
-            height: 11.5%;
+            top: 58.5%; left: 92.3%; width: 5.8%; height: 11.5%;
             background: transparent;
         }
     </style>
@@ -86,54 +83,74 @@
 
 <div class="gsmr-wrapper">
     <img id="gsmr-img" src="off.png" alt="GSM-R">
-    <div id="display"></div>
+    <div id="display">
+        <img id="emergency-icon" src="dein_piktogramm.png" alt="SOS">
+        <div id="text-layer"></div>
+    </div>
 
-    <button id="btn-power-main" class="btn" title="System einschalten" onclick="togglePower()"></button>
-
+    <button id="btn-power-main" class="btn" onclick="togglePower()"></button>
     <button id="btn-sos" class="btn" onclick="triggerEmergency()"></button>
     <button id="btn-enter" class="btn" onclick="pressEnter()"></button>
 </div>
+
+<audio id="sos-sound" src="sos.mp3"></audio>
 
 <script>
     let powerOn = false;
     let booting = false;
     const img = document.getElementById('gsmr-img');
     const display = document.getElementById('display');
+    const textLayer = document.getElementById('text-layer');
+    const sosIcon = document.getElementById('emergency-icon');
+    const sosAudio = document.getElementById('sos-sound');
 
     function togglePower() {
         if (booting) return;
 
         if (!powerOn) {
             booting = true;
-            // Wechsel zu Ausgang.png
             img.src = 'Ausgang.png';
-            display.innerHTML = "STARTING...";
+            
+            // WICHTIG: Farbe explizit auf Schwarz zurücksetzen
+            display.style.color = "#222"; 
+            sosIcon.style.display = "none";
+            textLayer.innerHTML = "SYSTEM STARTING...";
             
             setTimeout(() => {
-                display.innerHTML = "GSM-R BEREIT";
+                textLayer.innerHTML = "GSM-R BEREIT";
                 powerOn = true;
                 booting = false;
             }, 2000);
         } else {
-            powerOn = false;
-            display.innerHTML = "";
-            img.src = 'off.png';
+            powerOff();
         }
+    }
+
+    function powerOff() {
+        powerOn = false;
+        textLayer.innerHTML = "";
+        sosIcon.style.display = "none";
+        img.src = 'off.png';
+        if(sosAudio) { sosAudio.pause(); sosAudio.currentTime = 0; }
     }
 
     function triggerEmergency() {
         if (!powerOn) return;
-        display.style.color = "red";
-        display.innerHTML = "NOTRUF AKTIV";
+        
+        // Ton abspielen
+        sosAudio.play().catch(e => console.log("Sound-Blockade durch Browser"));
+        
+        // Piktogramm anzeigen (sobald du die Datei hochgeladen hast)
+        sosIcon.style.display = "block";
+        
+        // Schrift bleibt schwarz, wie gewünscht
+        display.style.color = "#222"; 
+        textLayer.innerHTML = "NOTRUF";
     }
 
     function pressEnter() {
         if (!powerOn) return;
-        // Die E-Taste dient jetzt nur der Bestätigung
-        console.log("Eingabe bestätigt");
-        if(display.innerHTML === "GSM-R BEREIT") {
-            display.innerHTML = "ZUGNUMMER?";
-        }
+        console.log("Eingabe");
     }
 </script>
 
