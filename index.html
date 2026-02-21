@@ -26,7 +26,7 @@
             width: auto;
         }
 
-        /* Das Display-Fenster */
+        /* Das Haupt-Display */
         #display {
             position: absolute;
             top: 25%;
@@ -34,23 +34,42 @@
             width: 61%;
             height: 46%;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            font-weight: bold;
-            font-size: 1.5rem;
-            color: #222; /* Standardfarbe Schwarz */
-            text-align: center;
             pointer-events: none;
             z-index: 10;
         }
 
-        /* Platzhalter für das Piktogramm */
+        /* Der Text-Layer für normales Booten/Bereit */
+        #text-layer {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: #222;
+            text-align: center;
+        }
+
+        /* Spezieller Container für den Notruf-Inhalt */
+        #sos-container {
+            display: none; /* Standardmäßig aus */
+            width: 90%;
+            height: 80%;
+            justify-content: space-between; /* Text links, Bild rechts */
+            align-items: center;
+            color: #222;
+            padding: 0 10px;
+        }
+
+        #sos-text {
+            font-weight: bold;
+            font-size: 1.2rem;
+            line-height: 1.3;
+            text-align: left;
+        }
+
         #sos-pic {
-            display: none;
-            width: 120px; /* Breite des Piktogramms im Display */
+            width: 140px; /* Größe des Piktogramms */
             height: auto;
-            margin-bottom: 10px;
+            margin-right: 10px; /* Abstand zum rechten Rand */
         }
 
         .btn {
@@ -61,7 +80,7 @@
             background: transparent;
         }
 
-        /* Weißer Einschaltknopf oben links */
+        /* Power-Knopf oben links */
         #btn-power-main {
             top: 5%;
             left: 15%;
@@ -74,18 +93,12 @@
 
         /* SOS-Taste */
         #btn-sos {
-            top: 1%;
-            left: 0.5%;
-            width: 7.5%;
-            height: 16%;
+            top: 1%; left: 0.5%; width: 7.5%; height: 16%;
         }
 
-        /* E-Taste (Eingabe) */
+        /* E-Taste */
         #btn-enter {
-            top: 58.5%;
-            left: 92.3%;
-            width: 5.8%;
-            height: 11.5%;
+            top: 58.5%; left: 92.3%; width: 5.8%; height: 11.5%;
         }
     </style>
 </head>
@@ -95,8 +108,12 @@
     <img id="gsmr-img" src="off.png" alt="GSM-R">
     
     <div id="display">
-        <img id="sos-pic" src="NothP.png" alt="SOS Icon">
         <div id="text-layer"></div>
+
+        <div id="sos-container">
+            <div id="sos-text">Zum Sprechen:<br>Sprechtaste!</div>
+            <img id="sos-pic" src="NothP.png" alt="SOS">
+        </div>
     </div>
 
     <button id="btn-power-main" class="btn" onclick="togglePower()"></button>
@@ -111,9 +128,8 @@
     let booting = false;
     
     const img = document.getElementById('gsmr-img');
-    const display = document.getElementById('display');
     const textLayer = document.getElementById('text-layer');
-    const sosPic = document.getElementById('sos-pic');
+    const sosContainer = document.getElementById('sos-container');
     const sosAudio = document.getElementById('sos-audio');
 
     function togglePower() {
@@ -123,9 +139,10 @@
             booting = true;
             img.src = 'Ausgang.png';
             
-            // RESET: Schrift auf Schwarz und Piktogramm weg
-            display.style.color = "#222"; 
-            sosPic.style.display = "none";
+            // Alles auf Null setzen beim Booten
+            sosContainer.style.display = "none";
+            textLayer.style.display = "block";
+            textLayer.style.color = "#222"; 
             textLayer.innerHTML = "SYSTEM STARTING...";
             
             setTimeout(() => {
@@ -141,10 +158,8 @@
     function powerOff() {
         powerOn = false;
         textLayer.innerHTML = "";
-        sosPic.style.display = "none";
+        sosContainer.style.display = "none";
         img.src = 'off.png';
-        
-        // Ton stoppen beim Ausschalten
         sosAudio.pause();
         sosAudio.currentTime = 0;
     }
@@ -153,19 +168,16 @@
         if (!powerOn) return;
         
         // Ton abspielen
-        sosAudio.play().catch(e => console.log("Audio-Fehler: Datei fehlt oder Browser blockt."));
+        sosAudio.play().catch(e => console.log("Audio-Fehler"));
         
-        // Piktogramm einblenden
-        sosPic.style.display = "block";
-        textLayer.innerHTML = "NOTRUF AKTIV";
-        
-        // Schriftfarbe bleibt Schwarz
-        display.style.color = "#222"; 
+        // UI umschalten
+        textLayer.style.display = "none";
+        sosContainer.style.display = "flex";
     }
 
     function pressEnter() {
         if (!powerOn) return;
-        console.log("E-Taste gedrückt (Eingabe)");
+        console.log("Enter gedrückt");
     }
 </script>
 
