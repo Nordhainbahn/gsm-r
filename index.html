@@ -5,67 +5,71 @@
     <title>GSM-R Simulation</title>
     <style>
         body {
-            background-color: #1a1a1a;
+            background-color: #111;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
+            color: white;
+            font-family: Arial, sans-serif;
         }
 
-        /* Dieser Container sorgt dafür, dass Buttons und Bild zusammenbleiben */
         .gsmr-box {
             position: relative;
-            width: 800px; /* Wir legen eine feste Breite fest */
+            width: 900px; /* Breite leicht erhöht für bessere Sichtbarkeit */
             height: auto;
         }
 
         #gsmr-img {
-            width: 100%; /* Das Bild füllt die 800px aus */
+            width: 100%;
             display: block;
+            border-radius: 4px;
         }
 
-        /* Das Display-Textfeld */
+        /* Das Display-Textfeld in Arial Bold */
         #display-overlay {
             position: absolute;
-            top: 19%;
-            left: 21%;
-            width: 66%;
-            height: 51%;
+            top: 36%;
+            left: 30.5%;
+            width: 40.5%;
+            height: 25%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: 'Courier New', monospace;
-            font-size: 1.2rem;
-            color: #222;
+            font-family: "Arial Black", Arial, sans-serif; /* Arial Bold / Black */
+            font-weight: 900;
+            font-size: 1.4rem;
+            color: #333;
             text-align: center;
             pointer-events: none;
             z-index: 10;
+            letter-spacing: 1px;
         }
 
-        /* Die Tasten */
+        /* Tasten-Styling */
         .btn {
             position: absolute;
-            background: rgba(255, 0, 0, 0.3); /* Test-Modus: ROT sichtbar */
-            border: 1px solid yellow;
+            background: rgba(255, 255, 0, 0.2); /* Gelber Schimmer zur Kontrolle */
+            border: 1px solid rgba(255, 255, 0, 0.5);
             cursor: pointer;
             z-index: 20;
         }
 
-        /* E-Taste (Power) ganz rechts unten in der vertikalen Reihe */
-        #btn-e {
-            top: 57%;
-            left: 90.5%;
-            width: 5.5%;
-            height: 11%;
+        /* Notruf (Rot oben links) */
+        #btn-sos {
+            top: 29%;
+            left: 21.5%;
+            width: 4.5%;
+            height: 7%;
         }
 
-        /* Notruf (Rote Taste oben links) */
-        #btn-sos {
-            top: 3.5%;
-            left: 2%;
-            width: 7.5%;
-            height: 14%;
+        /* E-Taste (Rechts neben dem Display) */
+        #btn-e {
+            top: 55.5%;
+            left: 74.3%; /* Korrigiert nach deinem Screenshot */
+            width: 3.8%;
+            height: 6.5%;
         }
     </style>
 </head>
@@ -75,8 +79,8 @@
     <img id="gsmr-img" src="off.png" alt="GSM-R">
     <div id="display-overlay"></div>
 
-    <button id="btn-e" class="btn" onclick="togglePower()"></button>
     <button id="btn-sos" class="btn" onclick="triggerEmergency()"></button>
+    <button id="btn-e" class="btn" onclick="togglePower()"></button>
 </div>
 
 <script>
@@ -87,10 +91,13 @@
 
     function togglePower() {
         if (booting) return;
+
         if (!powerOn) {
             booting = true;
             img.src = 'Ausgang.png';
+            display.style.color = "#333"; 
             display.innerHTML = "STARTING...";
+            
             setTimeout(() => {
                 display.innerHTML = "GSM-R BEREIT";
                 powerOn = true;
@@ -104,10 +111,10 @@
     }
 
     function triggerEmergency() {
-        if (powerOn) {
-            display.style.color = "red";
-            display.innerHTML = "NOTRUF AKTIV";
-        }
+        if (!powerOn) return;
+        
+        display.style.color = "red";
+        display.innerHTML = "NOTRUF AKTIV";
     }
 </script>
 </body>
