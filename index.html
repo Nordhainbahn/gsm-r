@@ -5,117 +5,149 @@
     <title>GSM-R Simulation</title>
     <style>
         body {
-            background-color: #111;
+            background-color: #0c0c0c;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
+            overflow: hidden;
             color: white;
             font-family: Arial, sans-serif;
         }
 
-        .gsmr-box {
+        .gsmr-wrapper {
             position: relative;
-            width: 900px; /* Breite leicht erhöht für bessere Sichtbarkeit */
-            height: auto;
+            display: inline-block;
         }
 
         #gsmr-img {
-            width: 100%;
             display: block;
-            border-radius: 4px;
+            height: 600px; /* Skalierung für den Browser */
+            width: auto;
+            user-select: none;
         }
 
-        /* Das Display-Textfeld in Arial Bold */
-        #display-overlay {
+        /* Das Display-Fenster mit Arial Bold */
+        #display {
             position: absolute;
-            top: 36%;
-            left: 30.5%;
-            width: 40.5%;
-            height: 25%;
+            top: 31%;
+            left: 20%;
+            width: 60%;
+            height: 38%;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            font-family: "Arial Black", Arial, sans-serif; /* Arial Bold / Black */
-            font-weight: 900;
+            font-family: Arial, sans-serif;
+            font-weight: bold; /* Arial Bold */
             font-size: 1.4rem;
-            color: #333;
+            color: #222;
             text-align: center;
             pointer-events: none;
             z-index: 10;
-            letter-spacing: 1px;
         }
 
-        /* Tasten-Styling */
+        /* Deine exakten Button-Positionen */
         .btn {
             position: absolute;
-            background: rgba(255, 255, 0, 0.2); /* Gelber Schimmer zur Kontrolle */
-            border: 1px solid rgba(255, 255, 0, 0.5);
+            background: transparent; /* Hier auf transparent gesetzt für den Echtbetrieb */
+            border: none;
             cursor: pointer;
             z-index: 20;
         }
 
-        /* Notruf (Rot oben links) */
+        /* Notruf-Taste (Deine Werte) */
         #btn-sos {
-            top: 29%;
-            left: 21.5%;
-            width: 4.5%;
-            height: 7%;
+            top: 1%;
+            left: 0.5%;
+            width: 7.5%;
+            height: 16%;
         }
 
-        /* E-Taste (Rechts neben dem Display) */
+        /* E-Taste (Deine Werte) */
         #btn-e {
-            top: 55.5%;
-            left: 74.3%; /* Korrigiert nach deinem Screenshot */
-            width: 3.8%;
-            height: 6.5%;
+            top: 58.5%;
+            left: 92.3%;
+            width: 5.8%;
+            height: 11.5%;
+        }
+
+        /* Platzhalter für die Zifferntasten (müssen noch feinjustiert werden) */
+        .num-btn {
+            bottom: 5%;
+            width: 4%;
+            height: 8%;
+            background: rgba(255, 255, 255, 0.0); /* Zum Testen auf 0.2 setzen */
         }
     </style>
 </head>
 <body>
 
-<div class="gsmr-box">
+<div class="gsmr-wrapper">
     <img id="gsmr-img" src="off.png" alt="GSM-R">
-    <div id="display-overlay"></div>
+    <div id="display"></div>
 
     <button id="btn-sos" class="btn" onclick="triggerEmergency()"></button>
     <button id="btn-e" class="btn" onclick="togglePower()"></button>
+
+    <button class="btn num-btn" style="left: 30%;" onclick="pressKey(1)"></button>
 </div>
 
 <script>
     let powerOn = false;
-    let booting = false;
-    const img = document.getElementById('gsmr-img');
-    const display = document.getElementById('display-overlay');
+    let inBootProcess = false;
+    let currentInput = "";
 
+    const img = document.getElementById('gsmr-img');
+    const display = document.getElementById('display');
+
+    // Ein- und Ausschalten über die E-Taste
     function togglePower() {
-        if (booting) return;
+        if (inBootProcess) return;
 
         if (!powerOn) {
-            booting = true;
-            img.src = 'Ausgang.png';
-            display.style.color = "#333"; 
-            display.innerHTML = "STARTING...";
+            bootSystem();
+        } else {
+            shutDown();
+        }
+    }
+
+    function bootSystem() {
+        inBootProcess = true;
+        img.src = 'Ausgang.png'; // Wechselt zum An-Zustand
+        display.style.color = "#333";
+        display.innerHTML = "SYSTEM STARTING...";
+
+        setTimeout(() => {
+            display.innerHTML = "MESA 23 v4.2<br>SELF TEST OK";
             
             setTimeout(() => {
-                display.innerHTML = "GSM-R BEREIT";
+                display.innerHTML = "BEREIT<br>DB NETZ";
                 powerOn = true;
-                booting = false;
-            }, 2000);
-        } else {
-            powerOn = false;
-            display.innerHTML = "";
-            img.src = 'off.png';
-        }
+                inBootProcess = false;
+            }, 1500);
+        }, 1500);
+    }
+
+    function shutDown() {
+        powerOn = false;
+        display.innerHTML = "";
+        img.src = 'off.png'; // Zurück zum Aus-Zustand
     }
 
     function triggerEmergency() {
         if (!powerOn) return;
-        
         display.style.color = "red";
         display.innerHTML = "NOTRUF AKTIV";
     }
+
+    function pressKey(num) {
+        if (!powerOn) return;
+        currentInput += num;
+        display.innerHTML = "ZUG: " + currentInput;
+    }
 </script>
+
 </body>
 </html>
