@@ -2,85 +2,78 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>GSM-R Führerpult Simulation</title>
+    <title>GSM-R Simulation</title>
     <style>
         body {
-            background-color: #0c0c0c;
+            background-color: #1a1a1a;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            overflow: hidden;
         }
 
-        .gsmr-wrapper {
+        /* Dieser Container sorgt dafür, dass Buttons und Bild zusammenbleiben */
+        .gsmr-box {
             position: relative;
-            display: inline-block;
+            width: 800px; /* Wir legen eine feste Breite fest */
+            height: auto;
         }
 
         #gsmr-img {
+            width: 100%; /* Das Bild füllt die 800px aus */
             display: block;
-            height: 600px; /* Skaliere das Bild nach Bedarf */
-            width: auto;
         }
 
-        /* Das Display-Fenster */
-        #display {
+        /* Das Display-Textfeld */
+        #display-overlay {
             position: absolute;
-            top: 31%;   /* Angepasst an dein Bild */
-            left: 61.5%;
-            width: 36.5%;
-            height: 33%;
-            background-color: transparent;
+            top: 19%;
+            left: 21%;
+            width: 66%;
+            height: 51%;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             font-family: 'Courier New', monospace;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             color: #222;
             text-align: center;
             pointer-events: none;
             z-index: 10;
         }
 
-        /* Button Styling zum Testen (Opacity auf 0 setzen, wenn fertig) */
+        /* Die Tasten */
         .btn {
             position: absolute;
-            background: rgba(255, 255, 255, 0); 
-            border: none;
+            background: rgba(255, 0, 0, 0.3); /* Test-Modus: ROT sichtbar */
+            border: 1px solid yellow;
             cursor: pointer;
             z-index: 20;
         }
 
-        /* E-Taste (Anschalten) */
+        /* E-Taste (Power) ganz rechts unten in der vertikalen Reihe */
         #btn-e {
-            top: 56.5%;
-            left: 45.4%;
-            width: 3.5%;
-            height: 6.5%;
+            top: 57%;
+            left: 90.5%;
+            width: 5.5%;
+            height: 11%;
         }
 
-        /* Notruf-Taste (Rot) */
+        /* Notruf (Rote Taste oben links) */
         #btn-sos {
-            top: 22.5%;
-            left: 50.8%;
-            width: 3.8%;
-            height: 8.5%;
-        }
-
-        /* Hilfsklasse für Boot-Animation */
-        .booting {
-            color: #000;
+            top: 3.5%;
+            left: 2%;
+            width: 7.5%;
+            height: 14%;
         }
     </style>
 </head>
 <body>
 
-<div class="gsmr-wrapper">
+<div class="gsmr-box">
     <img id="gsmr-img" src="off.png" alt="GSM-R">
-    <div id="display"></div>
+    <div id="display-overlay"></div>
 
     <button id="btn-e" class="btn" onclick="togglePower()"></button>
     <button id="btn-sos" class="btn" onclick="triggerEmergency()"></button>
@@ -88,60 +81,34 @@
 
 <script>
     let powerOn = false;
-    let inBootProcess = false;
-
+    let booting = false;
     const img = document.getElementById('gsmr-img');
-    const display = document.getElementById('display');
+    const display = document.getElementById('display-overlay');
 
     function togglePower() {
-        if (inBootProcess) return;
-
+        if (booting) return;
         if (!powerOn) {
-            bootDevice();
+            booting = true;
+            img.src = 'Ausgang.png';
+            display.innerHTML = "STARTING...";
+            setTimeout(() => {
+                display.innerHTML = "GSM-R BEREIT";
+                powerOn = true;
+                booting = false;
+            }, 2000);
         } else {
-            powerOff();
+            powerOn = false;
+            display.innerHTML = "";
+            img.src = 'off.png';
         }
     }
 
-    function bootDevice() {
-        inBootProcess = true;
-        img.src = 'Ausgang.png'; // Wechselt zum hellen Display
-        
-        display.innerHTML = "SYSTEM STARTING...";
-        
-        setTimeout(() => {
-            display.innerHTML = "MESA 23 v4.2<br>SELF TEST OK";
-            
-            setTimeout(() => {
-                display.innerHTML = "NETZ: DB NETZ<br>SUCHE ZUGDATEN...";
-                
-                setTimeout(() => {
-                    display.innerHTML = "BEREIT<br>KEINE ZD";
-                    powerOn = true;
-                    inBootProcess = false;
-                }, 2000);
-            }, 1500);
-        }, 1500);
-    }
-
-    function powerOff() {
-        powerOn = false;
-        display.innerHTML = "";
-        img.src = 'off.png';
-    }
-
     function triggerEmergency() {
-        if (!powerOn) return;
-        
-        display.style.color = "red";
-        display.innerHTML = "<strong>NOTRUF<br>AUSGELÖST</strong>";
-        
-        // Simuliert das Senden des Notrufs
-        setTimeout(() => {
-            if(powerOn) display.innerHTML = "NOTRUF AKTIV<br>SR: 112.5";
-        }, 2000);
+        if (powerOn) {
+            display.style.color = "red";
+            display.innerHTML = "NOTRUF AKTIV";
+        }
     }
 </script>
-
 </body>
 </html>
