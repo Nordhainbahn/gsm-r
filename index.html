@@ -1,156 +1,303 @@
-
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GSM-R Terminal Login</title>
+    <title>GSM-R Simulation</title>
     <style>
-        /* Grunddesign: Schwarz und technisches Grün */
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #050505;
-            font-family: 'Courier New', Courier, monospace;
+        body {
+            background-color: #111;
             display: flex;
             justify-content: center;
             align-items: center;
-            color: #00ff41;
+            height: 100vh;
+            margin: 0;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* Das Login-Fenster */
-        #login-container {
-            width: 400px;
-            padding: 40px;
-            border: 2px solid #00ff41;
-            box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
-            text-align: center;
-            background: #0a0a0a;
+        .gsmr-container {
+            position: relative;
+            display: inline-block;
+            /* Verhindert das Markieren des Bildes */
+            user-select: none;
         }
 
-        h1 {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .input-group {
-            margin-bottom: 25px;
-            text-align: left;
-        }
-
-        label {
+        #gsmr-screen {
             display: block;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
+            max-width: 1000px; /* Hier kannst du die Größe anpassen */
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
         }
 
-        input {
-            width: 100%;
-            padding: 12px;
-            background: #000;
-            border: 1px solid #00ff41;
-            color: #00ff41;
-            font-family: inherit;
-            font-size: 1.1rem;
-            box-sizing: border-box;
-            outline: none;
-        }
-
-        input:focus {
-            box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            background: #00ff41;
-            color: #000;
-            border: none;
-            font-family: inherit;
+        /* Das dynamische Display-Fenster (Text-Overlay) */
+        #display-text {
+            position: absolute;
+            top: 23%;   /* Diese Werte müssen evtl. an dein Bild angepasst werden */
+            left: 21%;
+            width: 58%;
+            height: 48%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Courier New', monospace;
+            color: #333; /* Dunkler Text auf grauem Grund (Ausgang.png) */
             font-weight: bold;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        button:hover {
-            background: #008f11;
-            color: #fff;
-        }
-
-        #status-msg {
-            margin-top: 20px;
-            font-size: 0.8rem;
-            min-height: 1em;
-        }
-
-        /* Versteckt das Funkgerät am Anfang */
-        #gsmr-interface {
-            display: none;
             text-align: center;
+            pointer-events: none; /* Klicks gehen durch den Text auf die Buttons */
+            font-size: 1.2rem;
+            line-height: 1.4;
         }
 
-        #gsmr-interface img {
-            max-width: 90vw;
-            border: 5px solid #333;
+        /* Unsichtbare Buttons über dem Bild */
+        .btn {
+            position: absolute;
+            background: rgba(255, 0, 0, 0); /* Auf 0.3 setzen zum Testen der Positionen! */
+            border: none;
+            cursor: pointer;
+        }
+
+        /* Position der E-Taste (Beispielwerte basierend auf Standard-Layout) */
+        #btn-e {
+            bottom: 30%;
+            right: 2.5%;
+            width: 6%;
+            height: 12%;
+        }
+
+        /* Rote Taste (Notruf oben links) */
+        #btn-sos {
+            top: 4%;
+            left: 1.5%;
+            width: 7%;
+            height: 13%;
         }
     </style>
 </head>
 <body>
 
-    <div id="login-container">
-        <h1>GSM-R System</h1>
-        <div class="input-group">
-            <label>Triebfahrzeugführer-ID:</label>
-            <input type="text" id="tf-id" placeholder="ID eingeben..." autocomplete="off">
-        </div>
-        <div class="input-group">
-            <label>Zugnummer (Fplo/Zuggattung):</label>
-            <input type="number" id="train-id" placeholder="z.B. 42301" autocomplete="off">
-        </div>
-        <button onclick="attemptLogin()">SYSTEM STARTEN</button>
-        <div id="status-msg">Bereit zur Anmeldung...</div>
-    </div>
+<div class="gsmr-container">
+    <img id="gsmr-screen" src="off.png" alt="GSM-R">
+    
+    <div id="display-text"></div>
 
-    <div id="gsmr-interface">
-        <h2 style="color: white;">GSM-R AKTIV</h2>
-        <img src="Ausgang.png" alt="GSM-R Display">
-        <p style="color: #aaa;">Status: Verbunden mit Netz 'DB-Netz'</p>
-    </div>
+    <button id="btn-e" class="btn" title="Einschalten / Bestätigen" onclick="powerButton()"></button>
+    <button id="btn-sos" class="btn" title="Notruf" onclick="emergencyCall()"></button>
+</div>
 
-    <script>
-        function attemptLogin() {
-            const tfId = document.getElementById('tf-id').value;
-            const trainId = document.getElementById('train-id').value;
-            const status = document.getElementById('status-msg');
+<script>
+    let isRunning = false;
+    let bootProcess = false;
 
-            if (tfId === "" || trainId === "") {
-                status.innerText = "FEHLER: Felder dürfen nicht leer sein!";
-                status.style.color = "red";
-                return;
-            }
+    const screenImg = document.getElementById('gsmr-screen');
+    const displayText = document.getElementById('display-text');
 
-            // Kleiner Lade-Effekt für die Immersion
-            status.innerText = "Prüfe Zugdaten...";
-            status.style.color = "#00ff41";
+    function powerButton() {
+        if (bootProcess) return;
 
+        if (!isRunning) {
+            startBootSequence();
+        } else {
+            shutDown();
+        }
+    }
+
+    function startBootSequence() {
+        bootProcess = true;
+        console.log("GSM-R wird gestartet...");
+        
+        // 1. Sofort das Bild wechseln
+        screenImg.src = 'Ausgang.png';
+        
+        // 2. Text-Sequenz (wie beim echten Gerät)
+        displayText.innerHTML = "SYSTEM START...";
+        displayText.style.color = "#000"; // Sichtbar auf grauem Grund
+
+        setTimeout(() => {
+            displayText.innerHTML = "PRÜFE KOMPONENTEN...<br>OK";
+            
             setTimeout(() => {
-                status.innerText = "Initialisiere Funkmodem...";
+                displayText.innerHTML = "GSM-R DB NETZ<br>V 3.4.0";
                 
                 setTimeout(() => {
-                    // Login-Fenster ausblenden, Interface einblenden
-                    document.getElementById('login-container').style.display = 'none';
-                    document.getElementById('gsmr-interface').style.display = 'block';
-                    console.log("GSM-R gestartet für TF: " + tfId + " | Zug: " + trainId);
+                    displayText.innerHTML = "REGISTRIERUNG...<br>BITTE WARTEN";
+                    
+                    setTimeout(() => {
+                        displayText.innerHTML = "BEREIT<br>KEINE ZUGNUMMER";
+                        isRunning = true;
+                        bootProcess = false;
+                    }, 2000);
                 }, 1500);
+            }, 1500);
+        }, 1500);
+    }
 
-            }, 1000);
+    function shutDown() {
+        isRunning = false;
+        displayText.innerHTML = "";
+        screenImg.src = 'off.png';
+        console.log("GSM-R ausgeschaltet.");
+    }
+
+    function emergencyCall() {
+        if (!isRunning) return;
+        alert("NOTRUF AUSGELÖST!");
+        displayText.innerHTML = "<span style='color:red'>!!! NOTRUF !!!</span>";
+    }
+</script>
+
+</body>
+</html><!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GSM-R Simulation</title>
+    <style>
+        body {
+            background-color: #111;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-    </script>
+
+        .gsmr-container {
+            position: relative;
+            display: inline-block;
+            /* Verhindert das Markieren des Bildes */
+            user-select: none;
+        }
+
+        #gsmr-screen {
+            display: block;
+            max-width: 1000px; /* Hier kannst du die Größe anpassen */
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        }
+
+        /* Das dynamische Display-Fenster (Text-Overlay) */
+        #display-text {
+            position: absolute;
+            top: 23%;   /* Diese Werte müssen evtl. an dein Bild angepasst werden */
+            left: 21%;
+            width: 58%;
+            height: 48%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Courier New', monospace;
+            color: #333; /* Dunkler Text auf grauem Grund (Ausgang.png) */
+            font-weight: bold;
+            text-align: center;
+            pointer-events: none; /* Klicks gehen durch den Text auf die Buttons */
+            font-size: 1.2rem;
+            line-height: 1.4;
+        }
+
+        /* Unsichtbare Buttons über dem Bild */
+        .btn {
+            position: absolute;
+            background: rgba(255, 0, 0, 0); /* Auf 0.3 setzen zum Testen der Positionen! */
+            border: none;
+            cursor: pointer;
+        }
+
+        /* Position der E-Taste (Beispielwerte basierend auf Standard-Layout) */
+        #btn-e {
+            bottom: 30%;
+            right: 2.5%;
+            width: 6%;
+            height: 12%;
+        }
+
+        /* Rote Taste (Notruf oben links) */
+        #btn-sos {
+            top: 4%;
+            left: 1.5%;
+            width: 7%;
+            height: 13%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="gsmr-container">
+    <img id="gsmr-screen" src="off.png" alt="GSM-R">
+    
+    <div id="display-text"></div>
+
+    <button id="btn-e" class="btn" title="Einschalten / Bestätigen" onclick="powerButton()"></button>
+    <button id="btn-sos" class="btn" title="Notruf" onclick="emergencyCall()"></button>
+</div>
+
+<script>
+    let isRunning = false;
+    let bootProcess = false;
+
+    const screenImg = document.getElementById('gsmr-screen');
+    const displayText = document.getElementById('display-text');
+
+    function powerButton() {
+        if (bootProcess) return;
+
+        if (!isRunning) {
+            startBootSequence();
+        } else {
+            shutDown();
+        }
+    }
+
+    function startBootSequence() {
+        bootProcess = true;
+        console.log("GSM-R wird gestartet...");
+        
+        // 1. Sofort das Bild wechseln
+        screenImg.src = 'Ausgang.png';
+        
+        // 2. Text-Sequenz (wie beim echten Gerät)
+        displayText.innerHTML = "SYSTEM START...";
+        displayText.style.color = "#000"; // Sichtbar auf grauem Grund
+
+        setTimeout(() => {
+            displayText.innerHTML = "PRÜFE KOMPONENTEN...<br>OK";
+            
+            setTimeout(() => {
+                displayText.innerHTML = "GSM-R DB NETZ<br>V 3.4.0";
+                
+                setTimeout(() => {
+                    displayText.innerHTML = "REGISTRIERUNG...<br>BITTE WARTEN";
+                    
+                    setTimeout(() => {
+                        displayText.innerHTML = "BEREIT<br>KEINE ZUGNUMMER";
+                        isRunning = true;
+                        bootProcess = false;
+                    }, 2000);
+                }, 1500);
+            }, 1500);
+        }, 1500);
+    }
+
+    function shutDown() {
+        isRunning = false;
+        displayText.innerHTML = "";
+        screenImg.src = 'off.png';
+        console.log("GSM-R ausgeschaltet.");
+    }
+
+    function emergencyCall() {
+        if (!isRunning) return;
+        alert("NOTRUF AUSGELÖST!");
+        displayText.innerHTML = "<span style='color:red'>!!! NOTRUF !!!</span>";
+    }
+</script>
+
 </body>
 </html>
