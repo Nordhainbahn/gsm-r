@@ -40,7 +40,6 @@
             z-index: 10;
         }
 
-        /* Der Text-Layer für normales Booten/Bereit */
         #text-layer {
             font-weight: bold;
             font-size: 1.5rem;
@@ -48,28 +47,33 @@
             text-align: center;
         }
 
-        /* Spezieller Container für den Notruf-Inhalt */
+        /* Notruf-Container Justierung */
         #sos-container {
-            display: none; /* Standardmäßig aus */
-            width: 90%;
-            height: 80%;
-            justify-content: space-between; /* Text links, Bild rechts */
+            display: none;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
             color: #222;
-            padding: 0 10px;
         }
 
+        /* Größerer Text, weiter rechts positioniert */
         #sos-text {
             font-weight: bold;
-            font-size: 1.2rem;
-            line-height: 1.3;
+            font-size: 1.4rem; /* Text vergrößert */
+            line-height: 1.2;
             text-align: left;
+            margin-left: 15%; /* Weiter nach rechts geschoben */
+            margin-top: -5%;  /* Ein bisschen höher gesetzt */
         }
 
+        /* Bild höher und weiter rechts */
         #sos-pic {
-            width: 140px; /* Größe des Piktogramms */
+            width: 185px; /* Wert aus deinem Screenshot */
             height: auto;
-            margin-right: 10px; /* Abstand zum rechten Rand */
+            margin-right: 20px; /* Rechtsbündiger */
+            margin-top: -10%;   /* Höher positioniert */
         }
 
         .btn {
@@ -109,8 +113,7 @@
     
     <div id="display">
         <div id="text-layer"></div>
-
-        <div id="sos-container">
+        <div id="sos-container" style="display: none;">
             <div id="sos-text">Zum Sprechen:<br>Sprechtaste!</div>
             <img id="sos-pic" src="NothP.png" alt="SOS">
         </div>
@@ -134,17 +137,13 @@
 
     function togglePower() {
         if (booting) return;
-
         if (!powerOn) {
             booting = true;
             img.src = 'Ausgang.png';
-            
-            // Alles auf Null setzen beim Booten
             sosContainer.style.display = "none";
             textLayer.style.display = "block";
             textLayer.style.color = "#222"; 
             textLayer.innerHTML = "SYSTEM STARTING...";
-            
             setTimeout(() => {
                 textLayer.innerHTML = "GSM-R BEREIT";
                 powerOn = true;
@@ -166,18 +165,14 @@
 
     function triggerEmergency() {
         if (!powerOn) return;
-        
-        // Ton abspielen
         sosAudio.play().catch(e => console.log("Audio-Fehler"));
-        
-        // UI umschalten
         textLayer.style.display = "none";
         sosContainer.style.display = "flex";
     }
 
     function pressEnter() {
         if (!powerOn) return;
-        console.log("Enter gedrückt");
+        console.log("Eingabe");
     }
 </script>
 
