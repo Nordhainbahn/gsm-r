@@ -28,7 +28,6 @@
             user-select: none;
         }
 
-        /* Das Haupt-Display */
         #display {
             position: absolute;
             top: 25%;
@@ -36,23 +35,24 @@
             width: 60.5%;
             height: 45.5%;
             display: flex;
-            flex-direction: column; /* Damit Info oben und Text mittig steht */
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             pointer-events: none;
             z-index: 10;
         }
 
-        /* Obere Info-Zeile (Netzkennung) */
+        /* Deine angepasste Top Bar */
         #top-info {
             position: absolute;
-            top: 5%;
+            top: -15%;
+            left: 8%;
             width: 100%;
             text-align: center;
             font-weight: bold;
-            font-size: 1rem;
+            font-size: 2rem;
             color: #222;
-            display: none; /* Erst nach Booten zeigen */
+            display: none;
         }
 
         #text-layer {
@@ -62,7 +62,6 @@
             text-align: center;
         }
 
-        /* Notruf-Container mit deinen Werten */
         #sos-container {
             display: none; 
             position: absolute;
@@ -70,6 +69,7 @@
             height: 100%;
         }
 
+        /* SOS-Text Position */
         #sos-text {
             position: absolute;
             top: 50%;
@@ -82,6 +82,7 @@
             text-align: left;
         }
 
+        /* SOS-Bild Position */
         #sos-pic {
             position: absolute;
             top: 1%;
@@ -98,22 +99,16 @@
             background: transparent;
         }
 
-        #btn-power-main {
-            top: 7.5%;
-            left: 14.8%;
-            width: 18px;
-            height: 18px;
-            background-color: white;
-            border-radius: 50%;
-            box-shadow: 0 0 10px white;
-        }
+        /* Knöpfe Positionen */
+        #btn-power-main { top: 7.5%; left: 14.8%; width: 18px; height: 18px; background-color: white; border-radius: 50%; box-shadow: 0 0 10px white; }
+        #btn-sos { top: 1%; left: 0.5%; width: 7.5%; height: 16%; }
+        #btn-enter { top: 58.5%; left: 92.3%; width: 5.8%; height: 11.5%; }
 
-        #btn-sos {
-            top: 1%; left: 0.5%; width: 7.5%; height: 16%;
-        }
-
-        #btn-enter {
-            top: 58.5%; left: 92.3%; width: 5.8%; height: 11.5%;
+        /* Zifferntasten Layout */
+        .num-btn {
+            top: 78%; /* Position der Tastenreihe im Bild */
+            width: 5%;
+            height: 8%;
         }
     </style>
 </head>
@@ -135,6 +130,17 @@
     <button id="btn-power-main" class="btn" onclick="togglePower()"></button>
     <button id="btn-sos" class="btn" onclick="triggerEmergency()"></button>
     <button id="btn-enter" class="btn" onclick="pressEnter()"></button>
+
+    <button class="btn num-btn" style="left: 35.5%;" onclick="typeNum('1')"></button>
+    <button class="btn num-btn" style="left: 40.5%;" onclick="typeNum('2')"></button>
+    <button class="btn num-btn" style="left: 45.5%;" onclick="typeNum('3')"></button>
+    <button class="btn num-btn" style="left: 50.5%;" onclick="typeNum('4')"></button>
+    <button class="btn num-btn" style="left: 55.5%;" onclick="typeNum('5')"></button>
+    <button class="btn num-btn" style="left: 60.5%;" onclick="typeNum('6')"></button>
+    <button class="btn num-btn" style="left: 65.5%;" onclick="typeNum('7')"></button>
+    <button class="btn num-btn" style="left: 70.5%;" onclick="typeNum('8')"></button>
+    <button class="btn num-btn" style="left: 75.5%;" onclick="typeNum('9')"></button>
+    <button class="btn num-btn" style="left: 80.5%;" onclick="typeNum('0')"></button>
 </div>
 
 <audio id="sos-audio" src="Nothaltauftrag.mp3"></audio>
@@ -142,6 +148,7 @@
 <script>
     let powerOn = false;
     let booting = false;
+    let currentInput = "";
     
     const img = document.getElementById('gsmr-img');
     const textLayer = document.getElementById('text-layer');
@@ -154,16 +161,14 @@
         if (!powerOn) {
             booting = true;
             img.src = 'Ausgang.png';
-            
             sosContainer.style.display = "none";
-            topInfo.style.display = "none"; // Während Bootvorgang aus
+            topInfo.style.display = "none";
             textLayer.style.display = "block";
-            textLayer.style.color = "#222"; 
             textLayer.innerHTML = "SYSTEM STARTING...";
             
             setTimeout(() => {
                 textLayer.innerHTML = "GSM-R BEREIT";
-                topInfo.style.display = "block"; // Netzkennung jetzt anzeigen
+                topInfo.style.display = "block";
                 powerOn = true;
                 booting = false;
             }, 2000);
@@ -172,8 +177,15 @@
         }
     }
 
+    function typeNum(num) {
+        if (!powerOn) return;
+        currentInput += num;
+        textLayer.innerHTML = "Zug: " + currentInput;
+    }
+
     function powerOff() {
         powerOn = false;
+        currentInput = "";
         textLayer.innerHTML = "";
         topInfo.style.display = "none";
         sosContainer.style.display = "none";
@@ -184,15 +196,16 @@
 
     function triggerEmergency() {
         if (!powerOn) return;
-        sosAudio.play().catch(e => console.log("Audio-Fehler"));
+        sosAudio.play().catch(e => console.log("Audio Error"));
         textLayer.style.display = "none";
-        topInfo.style.display = "none"; // Im Notruf wird das Netz oft ausgeblendet
+        topInfo.style.display = "none";
         sosContainer.style.display = "block";
     }
 
     function pressEnter() {
         if (!powerOn) return;
-        console.log("Enter gedrückt");
+        // Hier könnte man die Zugnummer bestätigen
+        textLayer.innerHTML = "ZUG " + currentInput + " ANGEMELDET";
     }
 </script>
 
