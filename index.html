@@ -36,10 +36,23 @@
             width: 60.5%;
             height: 45.5%;
             display: flex;
+            flex-direction: column; /* Damit Info oben und Text mittig steht */
             justify-content: center;
             align-items: center;
             pointer-events: none;
             z-index: 10;
+        }
+
+        /* Obere Info-Zeile (Netzkennung) */
+        #top-info {
+            position: absolute;
+            top: 5%;
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1rem;
+            color: #222;
+            display: none; /* Erst nach Booten zeigen */
         }
 
         #text-layer {
@@ -49,7 +62,7 @@
             text-align: center;
         }
 
-        /* Notruf-Container */
+        /* Notruf-Container mit deinen Werten */
         #sos-container {
             display: none; 
             position: absolute;
@@ -57,7 +70,6 @@
             height: 100%;
         }
 
-        /* Werte aus deinem Screenshot */
         #sos-text {
             position: absolute;
             top: 50%;
@@ -70,7 +82,6 @@
             text-align: left;
         }
 
-        /* Werte aus deinem Screenshot */
         #sos-pic {
             position: absolute;
             top: 1%;
@@ -79,7 +90,6 @@
             height: auto;
         }
 
-        /* Button-Flächen */
         .btn {
             position: absolute;
             cursor: pointer;
@@ -88,7 +98,6 @@
             background: transparent;
         }
 
-        /* Power-Knopf */
         #btn-power-main {
             top: 7.5%;
             left: 14.8%;
@@ -99,20 +108,12 @@
             box-shadow: 0 0 10px white;
         }
 
-        /* SOS-Taste */
         #btn-sos {
-            top: 1%;
-            left: 0.5%;
-            width: 7.5%;
-            height: 16%;
+            top: 1%; left: 0.5%; width: 7.5%; height: 16%;
         }
 
-        /* E-Taste */
         #btn-enter {
-            top: 58.5%;
-            left: 92.3%;
-            width: 5.8%;
-            height: 11.5%;
+            top: 58.5%; left: 92.3%; width: 5.8%; height: 11.5%;
         }
     </style>
 </head>
@@ -122,7 +123,9 @@
     <img id="gsmr-img" src="off.png" alt="GSM-R">
     
     <div id="display">
+        <div id="top-info">GSM-R-D</div>
         <div id="text-layer"></div>
+        
         <div id="sos-container">
             <div id="sos-text">Zum Sprechen:<br>Sprechtaste!</div>
             <img id="sos-pic" src="NothP.png" alt="SOS">
@@ -142,6 +145,7 @@
     
     const img = document.getElementById('gsmr-img');
     const textLayer = document.getElementById('text-layer');
+    const topInfo = document.getElementById('top-info');
     const sosContainer = document.getElementById('sos-container');
     const sosAudio = document.getElementById('sos-audio');
 
@@ -150,12 +154,16 @@
         if (!powerOn) {
             booting = true;
             img.src = 'Ausgang.png';
+            
             sosContainer.style.display = "none";
+            topInfo.style.display = "none"; // Während Bootvorgang aus
             textLayer.style.display = "block";
             textLayer.style.color = "#222"; 
             textLayer.innerHTML = "SYSTEM STARTING...";
+            
             setTimeout(() => {
                 textLayer.innerHTML = "GSM-R BEREIT";
+                topInfo.style.display = "block"; // Netzkennung jetzt anzeigen
                 powerOn = true;
                 booting = false;
             }, 2000);
@@ -167,6 +175,7 @@
     function powerOff() {
         powerOn = false;
         textLayer.innerHTML = "";
+        topInfo.style.display = "none";
         sosContainer.style.display = "none";
         img.src = 'off.png';
         sosAudio.pause();
@@ -177,6 +186,7 @@
         if (!powerOn) return;
         sosAudio.play().catch(e => console.log("Audio-Fehler"));
         textLayer.style.display = "none";
+        topInfo.style.display = "none"; // Im Notruf wird das Netz oft ausgeblendet
         sosContainer.style.display = "block";
     }
 
