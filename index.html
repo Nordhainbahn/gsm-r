@@ -40,19 +40,16 @@
             align-items: center;
             pointer-events: none;
             z-index: 10;
-            overflow: hidden;
         }
 
-        /* Standard-Text (Bereit / Starting) */
         #text-layer {
-            font-family: Arial, sans-serif;
             font-weight: bold;
             font-size: 1.5rem;
             color: #222;
             text-align: center;
         }
 
-        /* Notruf-Container (Absolut positioniert für präzise Steuerung) */
+        /* Notruf-Container */
         #sos-container {
             display: none; 
             position: absolute;
@@ -60,11 +57,11 @@
             height: 100%;
         }
 
-        /* "Zum Sprechen Sprechtaste" - Links positioniert */
+        /* Werte aus deinem Screenshot */
         #sos-text {
             position: absolute;
-            top: 45%;
-            left: 5%;
+            top: 50%;
+            left: 10%;
             font-family: Arial, sans-serif;
             font-weight: bold;
             font-size: 1.3rem;
@@ -73,25 +70,25 @@
             text-align: left;
         }
 
-        /* Piktogramm - Rechts und etwas höher */
+        /* Werte aus deinem Screenshot */
         #sos-pic {
             position: absolute;
-            top: 22%;
-            right: 12%;
-            width: 185px; /* Dein Wert aus dem Screenshot */
+            top: 1%;
+            right: 18%;
+            width: 185px;
             height: auto;
         }
 
-        /* Button-Styles */
+        /* Button-Flächen */
         .btn {
             position: absolute;
             cursor: pointer;
             z-index: 20;
             border: none;
-            background: transparent; /* Für Echtbetrieb unsichtbar */
+            background: transparent;
         }
 
-        /* Weißer Einschaltknopf oben links */
+        /* Power-Knopf */
         #btn-power-main {
             top: 7.5%;
             left: 14.8%;
@@ -102,7 +99,7 @@
             box-shadow: 0 0 10px white;
         }
 
-        /* SOS-Taste (Werte aus Screenshot) */
+        /* SOS-Taste */
         #btn-sos {
             top: 1%;
             left: 0.5%;
@@ -110,7 +107,7 @@
             height: 16%;
         }
 
-        /* E-Taste (Werte aus Screenshot) */
+        /* E-Taste */
         #btn-enter {
             top: 58.5%;
             left: 92.3%;
@@ -126,14 +123,13 @@
     
     <div id="display">
         <div id="text-layer"></div>
-
         <div id="sos-container">
             <div id="sos-text">Zum Sprechen:<br>Sprechtaste!</div>
             <img id="sos-pic" src="NothP.png" alt="SOS">
         </div>
     </div>
 
-    <button id="btn-power-main" class="btn" title="Einschalten" onclick="togglePower()"></button>
+    <button id="btn-power-main" class="btn" onclick="togglePower()"></button>
     <button id="btn-sos" class="btn" onclick="triggerEmergency()"></button>
     <button id="btn-enter" class="btn" onclick="pressEnter()"></button>
 </div>
@@ -151,17 +147,13 @@
 
     function togglePower() {
         if (booting) return;
-
         if (!powerOn) {
             booting = true;
-            img.src = 'Ausgang.png'; //
-            
-            // Sicherstellen, dass alles auf Standard (Schwarz) steht
+            img.src = 'Ausgang.png';
             sosContainer.style.display = "none";
             textLayer.style.display = "block";
             textLayer.style.color = "#222"; 
             textLayer.innerHTML = "SYSTEM STARTING...";
-            
             setTimeout(() => {
                 textLayer.innerHTML = "GSM-R BEREIT";
                 powerOn = true;
@@ -176,27 +168,21 @@
         powerOn = false;
         textLayer.innerHTML = "";
         sosContainer.style.display = "none";
-        img.src = 'off.png'; //
-        
-        // Sound stoppen
+        img.src = 'off.png';
         sosAudio.pause();
         sosAudio.currentTime = 0;
     }
 
     function triggerEmergency() {
         if (!powerOn) return;
-        
-        // Sound abspielen
-        sosAudio.play().catch(e => console.log("Audio-Fehler: Datei fehlt oder Browser-Sperre."));
-        
-        // UI umschalten: Normaler Text weg, SOS-Layout her
+        sosAudio.play().catch(e => console.log("Audio-Fehler"));
         textLayer.style.display = "none";
         sosContainer.style.display = "block";
     }
 
     function pressEnter() {
         if (!powerOn) return;
-        console.log("Eingabe bestätigt (E-Taste)");
+        console.log("Enter gedrückt");
     }
 </script>
 
