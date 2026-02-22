@@ -10,57 +10,44 @@
 
         #display {
             position: absolute; top: 25%; left: 20.5%; width: 60.5%; height: 45.5%;
-            background-color: #c0c0c0;
-            display: flex; flex-direction: column; pointer-events: none; z-index: 10;
-            border: 2px solid #000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            pointer-events: none; z-index: 10;
         }
 
-        /* Das Feld oben in der Mitte */
-        #top-info-box {
-            position: absolute; 
-            top: 0; 
-            left: 25%; /* Mittig platziert */
-            width: 50%; 
-            height: 15%;
-            display: none; 
-            justify-content: center; 
-            align-items: center;
-            font-weight: bold; 
-            font-size: 1.2rem; 
-            color: #222;
-            border-bottom: 1px solid #222;
-            border-left: 1px solid #222;
-            border-right: 1px solid #222;
+        /* Top-Bar Werte */
+        #top-info {
+            position: absolute; top: -15%; left: 8%; width: 100%; text-align: center;
+            font-weight: bold; font-size: 2rem; color: #222; display: none; z-index: 15;
         }
 
-        /* Nur dieses Feld wird schwarz bei ZD */
-        #top-info-box.zd-active {
-            background-color: #222;
-            color: #c0c0c0;
-        }
-
+        /* Deine Idealwerte für die Seitenleiste */
         #right-info-block {
-            position: absolute; top: 0%; right: -12%; width: 100%; text-align: right;
-            font-weight: bold; font-size: 2rem; color: #222; display: none;
+            position: absolute; 
+            top: 0%; 
+            right: -12%; 
+            width: 100%; 
+            text-align: right;
+            font-weight: bold; 
+            font-size: 2rem; 
+            color: #222; 
+            display: none;
         }
 
-        /* Hartes Blinken */
+        /* Hartes Blinken ohne Animation-Easing */
         .blink { animation: step-blinker 1s steps(1) infinite; }
         @keyframes step-blinker { 50% { visibility: hidden; } }
 
-        #softkeys {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 20%;
-            display: none; grid-template-columns: repeat(10, 1fr);
-            border-top: 2px solid #222;
-        }
-        .softkey { border-right: 1px solid #222; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem; color: #222; }
+        #text-layer { font-weight: bold; font-size: 1.5rem; color: #222; text-align: center; }
 
-        #main-content { margin-top: 20%; width: 100%; text-align: center; font-weight: bold; font-size: 1.5rem; color: #222; }
+        #sos-container { display: none; position: absolute; width: 100%; height: 100%; }
+        #sos-text { position: absolute; top: 50%; left: 10%; font-weight: bold; font-size: 1.3rem; color: #222; }
+        #sos-pic { position: absolute; top: 1%; right: 18%; width: 185px; height: auto; }
 
-        .btn { position: absolute; cursor: pointer; z-index: 30; border: none; background: transparent; }
-        #btn-power { top: 7.5%; left: 14.8%; width: 18px; height: 18px; background: white; border-radius: 50%; }
+        .btn { position: absolute; cursor: pointer; z-index: 20; border: none; background: transparent; }
+        #btn-power-main { top: 7.5%; left: 14.8%; width: 18px; height: 18px; background-color: white; border-radius: 50%; box-shadow: 0 0 10px white; }
         #btn-sos { top: 1%; left: 0.5%; width: 7.5%; height: 16%; }
-        
+        #btn-enter { top: 58.5%; left: 92.3%; width: 5.8%; height: 11.5%; }
+
         .num-btn { top: 78%; width: 4.5%; height: 7.5%; }
     </style>
 </head>
@@ -70,34 +57,23 @@
     <img id="gsmr-img" src="off.png" alt="GSM-R">
     
     <div id="display">
-        <div id="top-info-box">GSM-R-D</div>
+        <div id="top-info">GSM-R-D</div>
         
         <div id="right-info-block" class="blink">
             <div>FC01 (Tf1)</div>
             <div>DB Regio</div>
         </div>
 
+        <div id="text-layer"></div>
         <div id="sos-container">
             <div id="sos-text">Zum Sprechen:<br>Sprechtaste!</div>
-            <img id="sos-pic" src="image_d97dfd.png" alt="SOS">
-        </div>
-
-        <div id="main-content"></div>
-
-        <div id="softkeys">
-            <div class="softkey" style="border-left: 1px solid #222;">ZN</div>
-            <div class="softkey">FzSt</div>
-            <div class="softkey">EVU</div>
-            <div class="softkey"></div><div class="softkey"></div>
-            <div class="softkey"></div><div class="softkey"></div>
-            <div class="softkey"></div>
-            <div class="softkey">Abgl.</div>
-            <div class="softkey"></div>
+            <img id="sos-pic" src="NothP.png" alt="SOS">
         </div>
     </div>
 
-    <button id="btn-power" class="btn" onclick="togglePower()"></button>
+    <button id="btn-power-main" class="btn" onclick="togglePower()"></button>
     <button id="btn-sos" class="btn" onclick="triggerEmergency()"></button>
+    <button id="btn-enter" class="btn" onclick="pressEnter()"></button>
 
     <button class="btn num-btn" style="left: 35.8%;" onclick="typeNum('1')"></button>
     <button class="btn num-btn" style="left: 40.5%;" onclick="typeNum('2')"></button>
@@ -107,49 +83,70 @@
     <button class="btn num-btn" style="left: 59.3%;" onclick="typeNum('6')"></button>
     <button class="btn num-btn" style="left: 64.1%;" onclick="typeNum('7')"></button>
     <button class="btn num-btn" style="left: 68.8%;" onclick="typeNum('8')"></button>
-    <button class="btn num-btn" style="left: 73.5%;" onclick="openZD()"></button> <button class="btn num-btn" style="left: 78.2%;" onclick="typeNum('0')"></button>
+    <button class="btn num-btn" style="left: 73.5%;" onclick="typeNum('9')"></button>
+    <button class="btn num-btn" style="left: 78.2%;" onclick="typeNum('0')"></button>
 </div>
+
+<audio id="sos-audio" src="Nothaltauftrag.mp3"></audio>
 
 <script>
     let powerOn = false;
+    let booting = false;
+    let zdRegistered = false;
+    let currentInput = "";
     
-    const topBox = document.getElementById('top-info-box');
+    const textLayer = document.getElementById('text-layer');
+    const topInfo = document.getElementById('top-info');
     const rightInfo = document.getElementById('right-info-block');
-    const softkeys = document.getElementById('softkeys');
-    const mainContent = document.getElementById('main-content');
+    const sosContainer = document.getElementById('sos-container');
+    const sosAudio = document.getElementById('sos-audio');
 
     function togglePower() {
+        if (booting) return;
         if (!powerOn) {
+            booting = true;
             document.getElementById('gsmr-img').src = 'Ausgang.png';
+            textLayer.innerHTML = "SYSTEM STARTING...";
             setTimeout(() => {
-                powerOn = true;
-                topBox.style.display = "flex";
+                textLayer.innerHTML = "GSM-R BEREIT";
+                topInfo.style.display = "block";
                 rightInfo.style.display = "block";
-                softkeys.style.display = "grid";
-                mainContent.innerHTML = "GSM-R BEREIT";
-            }, 1000);
+                powerOn = true;
+                booting = false;
+            }, 2000);
         } else {
-            location.reload();
+            powerOff();
         }
     }
 
-    function openZD() {
-        if (!powerOn) return;
-        // Nur das obere Feld invertieren
-        topBox.classList.add('zd-active');
-        topBox.innerHTML = "Zugdaten";
-        mainContent.innerHTML = "Zugnummer eingeben:";
-    }
-
-    function typeNum(n) {
-        if(powerOn) mainContent.innerHTML += n;
+    function pressEnter() {
+        if (!powerOn || zdRegistered) return;
+        // Anmeldung stoppt das Blinken
+        zdRegistered = true;
+        rightInfo.classList.remove('blink');
+        textLayer.innerHTML = "ZUG DATEN AKTIV";
     }
 
     function triggerEmergency() {
         if (!powerOn) return;
-        // Notruf-Logik bleibt bestehen
-        mainContent.innerHTML = "NOTRUF AKTIV";
+        sosAudio.play().catch(e => console.log("Audio Fehler"));
+        textLayer.style.display = "none";
+        sosContainer.style.display = "block";
     }
+
+    function powerOff() {
+        powerOn = false;
+        zdRegistered = false;
+        rightInfo.classList.add('blink');
+        topInfo.style.display = rightInfo.style.display = sosContainer.style.display = "none";
+        textLayer.style.display = "block";
+        textLayer.innerHTML = "";
+        document.getElementById('gsmr-img').src = 'off.png';
+        sosAudio.pause();
+        sosAudio.currentTime = 0;
+    }
+
+    function typeNum(n) { if(powerOn && !sosContainer.style.display === "block") { currentInput += n; textLayer.innerHTML = "Eingabe: " + currentInput; } }
 </script>
 </body>
 </html>
