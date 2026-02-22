@@ -42,7 +42,7 @@
             z-index: 10;
         }
 
-        /* Deine angepasste Top Bar */
+        /* Deine Top-Bar Werte */
         #top-info {
             position: absolute;
             top: -15%;
@@ -53,6 +53,7 @@
             font-size: 2rem;
             color: #222;
             display: none;
+            z-index: 15; /* Sicherstellen, dass es über allem liegt */
         }
 
         #text-layer {
@@ -69,12 +70,11 @@
             height: 100%;
         }
 
-        /* SOS-Text Position */
+        /* SOS-Text */
         #sos-text {
             position: absolute;
             top: 50%;
             left: 10%;
-            font-family: Arial, sans-serif;
             font-weight: bold;
             font-size: 1.3rem;
             line-height: 1.2;
@@ -82,7 +82,7 @@
             text-align: left;
         }
 
-        /* SOS-Bild Position */
+        /* SOS-Bild */
         #sos-pic {
             position: absolute;
             top: 1%;
@@ -99,16 +99,16 @@
             background: transparent;
         }
 
-        /* Knöpfe Positionen */
+        /* Tasten-Positionen */
         #btn-power-main { top: 7.5%; left: 14.8%; width: 18px; height: 18px; background-color: white; border-radius: 50%; box-shadow: 0 0 10px white; }
         #btn-sos { top: 1%; left: 0.5%; width: 7.5%; height: 16%; }
         #btn-enter { top: 58.5%; left: 92.3%; width: 5.8%; height: 11.5%; }
 
-        /* Zifferntasten Layout */
+        /* Zifferntasten Reihe */
         .num-btn {
-            top: 78%; /* Position der Tastenreihe im Bild */
-            width: 5%;
-            height: 8%;
+            top: 78%;
+            width: 4.5%;
+            height: 7.5%;
         }
     </style>
 </head>
@@ -119,6 +119,7 @@
     
     <div id="display">
         <div id="top-info">GSM-R-D</div>
+        
         <div id="text-layer"></div>
         
         <div id="sos-container">
@@ -131,16 +132,16 @@
     <button id="btn-sos" class="btn" onclick="triggerEmergency()"></button>
     <button id="btn-enter" class="btn" onclick="pressEnter()"></button>
 
-    <button class="btn num-btn" style="left: 35.5%;" onclick="typeNum('1')"></button>
+    <button class="btn num-btn" style="left: 35.8%;" onclick="typeNum('1')"></button>
     <button class="btn num-btn" style="left: 40.5%;" onclick="typeNum('2')"></button>
-    <button class="btn num-btn" style="left: 45.5%;" onclick="typeNum('3')"></button>
-    <button class="btn num-btn" style="left: 50.5%;" onclick="typeNum('4')"></button>
-    <button class="btn num-btn" style="left: 55.5%;" onclick="typeNum('5')"></button>
-    <button class="btn num-btn" style="left: 60.5%;" onclick="typeNum('6')"></button>
-    <button class="btn num-btn" style="left: 65.5%;" onclick="typeNum('7')"></button>
-    <button class="btn num-btn" style="left: 70.5%;" onclick="typeNum('8')"></button>
-    <button class="btn num-btn" style="left: 75.5%;" onclick="typeNum('9')"></button>
-    <button class="btn num-btn" style="left: 80.5%;" onclick="typeNum('0')"></button>
+    <button class="btn num-btn" style="left: 45.2%;" onclick="typeNum('3')"></button>
+    <button class="btn num-btn" style="left: 49.9%;" onclick="typeNum('4')"></button>
+    <button class="btn num-btn" style="left: 54.6%;" onclick="typeNum('5')"></button>
+    <button class="btn num-btn" style="left: 59.3%;" onclick="typeNum('6')"></button>
+    <button class="btn num-btn" style="left: 64.1%;" onclick="typeNum('7')"></button>
+    <button class="btn num-btn" style="left: 68.8%;" onclick="typeNum('8')"></button>
+    <button class="btn num-btn" style="left: 73.5%;" onclick="typeNum('9')"></button>
+    <button class="btn num-btn" style="left: 78.2%;" onclick="typeNum('0')"></button>
 </div>
 
 <audio id="sos-audio" src="Nothaltauftrag.mp3"></audio>
@@ -161,6 +162,7 @@
         if (!powerOn) {
             booting = true;
             img.src = 'Ausgang.png';
+            
             sosContainer.style.display = "none";
             topInfo.style.display = "none";
             textLayer.style.display = "block";
@@ -168,7 +170,7 @@
             
             setTimeout(() => {
                 textLayer.innerHTML = "GSM-R BEREIT";
-                topInfo.style.display = "block";
+                topInfo.style.display = "block"; // Wird hier aktiviert
                 powerOn = true;
                 booting = false;
             }, 2000);
@@ -178,9 +180,17 @@
     }
 
     function typeNum(num) {
-        if (!powerOn) return;
+        if (!powerOn || sosContainer.style.display === "block") return;
         currentInput += num;
         textLayer.innerHTML = "Zug: " + currentInput;
+    }
+
+    function triggerEmergency() {
+        if (!powerOn) return;
+        sosAudio.play().catch(e => console.log("Audio Error"));
+        textLayer.style.display = "none";
+        // topInfo bleibt auf display: block!
+        sosContainer.style.display = "block";
     }
 
     function powerOff() {
@@ -194,18 +204,11 @@
         sosAudio.currentTime = 0;
     }
 
-    function triggerEmergency() {
-        if (!powerOn) return;
-        sosAudio.play().catch(e => console.log("Audio Error"));
-        textLayer.style.display = "none";
-        topInfo.style.display = "none";
-        sosContainer.style.display = "block";
-    }
-
     function pressEnter() {
         if (!powerOn) return;
-        // Hier könnte man die Zugnummer bestätigen
-        textLayer.innerHTML = "ZUG " + currentInput + " ANGEMELDET";
+        if (currentInput !== "") {
+            textLayer.innerHTML = "ZUG " + currentInput + " AKTIV";
+        }
     }
 </script>
 
