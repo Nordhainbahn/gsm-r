@@ -4,112 +4,45 @@
     <meta charset="UTF-8">
     <title>GSM-R Simulation</title>
     <style>
-        body {
-            background-color: #0c0c0c;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            color: white;
-            font-family: Arial, sans-serif;
-            overflow: hidden;
-        }
-
-        .gsmr-wrapper {
-            position: relative;
-            display: inline-block;
-        }
-
-        #gsmr-img {
-            display: block;
-            height: 600px;
-            width: auto;
-            user-select: none;
-        }
+        body { background-color: #0c0c0c; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; color: white; font-family: Arial, sans-serif; overflow: hidden; }
+        .gsmr-wrapper { position: relative; display: inline-block; }
+        #gsmr-img { display: block; height: 600px; width: auto; user-select: none; }
 
         #display {
-            position: absolute;
-            top: 25%;
-            left: 20.5%;
-            width: 60.5%;
-            height: 45.5%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            pointer-events: none;
-            z-index: 10;
+            position: absolute; top: 25%; left: 20.5%; width: 60.5%; height: 45.5%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            pointer-events: none; z-index: 10;
         }
 
-        /* Deine Top-Bar Werte */
+        /* Top-Bar Werte */
         #top-info {
-            position: absolute;
-            top: -15%;
-            left: 8%;
-            width: 100%;
-            text-align: center;
-            font-weight: bold;
-            font-size: 2rem;
-            color: #222;
-            display: none;
-            z-index: 15; /* Sicherstellen, dass es über allem liegt */
+            position: absolute; top: -15%; left: 8%; width: 100%; text-align: center;
+            font-weight: bold; font-size: 2rem; color: #222; display: none; z-index: 15;
         }
 
-        #text-layer {
-            font-weight: bold;
-            font-size: 1.5rem;
-            color: #222;
-            text-align: center;
+        /* Rechter Infoblock */
+        #right-info-block {
+            position: absolute; top: 12%; right: 2%; width: 30%; text-align: right;
+            font-weight: bold; font-size: 1.1rem; color: #222; display: none;
         }
 
-        #sos-container {
-            display: none; 
-            position: absolute;
-            width: 100%;
-            height: 100%;
-        }
+        /* Blink-Animation für unangemeldeten Zustand */
+        .blink { animation: blinker 1s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0; } }
 
-        /* SOS-Text */
-        #sos-text {
-            position: absolute;
-            top: 50%;
-            left: 10%;
-            font-weight: bold;
-            font-size: 1.3rem;
-            line-height: 1.2;
-            color: #222;
-            text-align: left;
-        }
+        #text-layer { font-weight: bold; font-size: 1.5rem; color: #222; text-align: center; }
 
-        /* SOS-Bild */
-        #sos-pic {
-            position: absolute;
-            top: 1%;
-            right: 18%;
-            width: 185px;
-            height: auto;
-        }
+        #sos-container { display: none; position: absolute; width: 100%; height: 100%; }
+        #sos-text { position: absolute; top: 50%; left: 10%; font-weight: bold; font-size: 1.3rem; color: #222; }
+        #sos-pic { position: absolute; top: 1%; right: 18%; width: 185px; height: auto; }
 
-        .btn {
-            position: absolute;
-            cursor: pointer;
-            z-index: 20;
-            border: none;
-            background: transparent;
-        }
-
-        /* Tasten-Positionen */
+        .btn { position: absolute; cursor: pointer; z-index: 20; border: none; background: transparent; }
         #btn-power-main { top: 7.5%; left: 14.8%; width: 18px; height: 18px; background-color: white; border-radius: 50%; box-shadow: 0 0 10px white; }
         #btn-sos { top: 1%; left: 0.5%; width: 7.5%; height: 16%; }
         #btn-enter { top: 58.5%; left: 92.3%; width: 5.8%; height: 11.5%; }
 
         /* Zifferntasten Reihe */
-        .num-btn {
-            top: 78%;
-            width: 4.5%;
-            height: 7.5%;
-        }
+        .num-btn { top: 78%; width: 4.5%; height: 7.5%; }
     </style>
 </head>
 <body>
@@ -120,11 +53,15 @@
     <div id="display">
         <div id="top-info">GSM-R-D</div>
         
+        <div id="right-info-block" class="blink">
+            <div>FC01 (Tf1)</div>
+            <div>DB Regio</div>
+        </div>
+
         <div id="text-layer"></div>
-        
         <div id="sos-container">
             <div id="sos-text">Zum Sprechen:<br>Sprechtaste!</div>
-            <img id="sos-pic" src="NothP.png" alt="SOS">
+            <img id="sos-pic" src="image_d97dfd.png" alt="SOS">
         </div>
     </div>
 
@@ -149,11 +86,12 @@
 <script>
     let powerOn = false;
     let booting = false;
+    let zdRegistered = false;
     let currentInput = "";
     
-    const img = document.getElementById('gsmr-img');
     const textLayer = document.getElementById('text-layer');
     const topInfo = document.getElementById('top-info');
+    const rightInfo = document.getElementById('right-info-block');
     const sosContainer = document.getElementById('sos-container');
     const sosAudio = document.getElementById('sos-audio');
 
@@ -161,16 +99,12 @@
         if (booting) return;
         if (!powerOn) {
             booting = true;
-            img.src = 'Ausgang.png';
-            
-            sosContainer.style.display = "none";
-            topInfo.style.display = "none";
-            textLayer.style.display = "block";
+            document.getElementById('gsmr-img').src = 'Ausgang.png';
             textLayer.innerHTML = "SYSTEM STARTING...";
-            
             setTimeout(() => {
                 textLayer.innerHTML = "GSM-R BEREIT";
-                topInfo.style.display = "block"; // Wird hier aktiviert
+                topInfo.style.display = "block";
+                rightInfo.style.display = "block";
                 powerOn = true;
                 booting = false;
             }, 2000);
@@ -179,38 +113,33 @@
         }
     }
 
-    function typeNum(num) {
-        if (!powerOn || sosContainer.style.display === "block") return;
-        currentInput += num;
-        textLayer.innerHTML = "Zug: " + currentInput;
+    function pressEnter() {
+        if (!powerOn || zdRegistered) return;
+        // Anmeldung simulieren
+        zdRegistered = true;
+        rightInfo.classList.remove('blink');
+        textLayer.innerHTML = "ZUG ANGEMELDET";
     }
 
     function triggerEmergency() {
         if (!powerOn) return;
-        sosAudio.play().catch(e => console.log("Audio Error"));
+        sosAudio.play();
         textLayer.style.display = "none";
-        // topInfo bleibt auf display: block!
         sosContainer.style.display = "block";
     }
 
     function powerOff() {
         powerOn = false;
-        currentInput = "";
+        zdRegistered = false;
+        rightInfo.classList.add('blink');
+        topInfo.style.display = rightInfo.style.display = sosContainer.style.display = "none";
         textLayer.innerHTML = "";
-        topInfo.style.display = "none";
-        sosContainer.style.display = "none";
-        img.src = 'off.png';
+        document.getElementById('gsmr-img').src = 'off.png';
         sosAudio.pause();
         sosAudio.currentTime = 0;
     }
 
-    function pressEnter() {
-        if (!powerOn) return;
-        if (currentInput !== "") {
-            textLayer.innerHTML = "ZUG " + currentInput + " AKTIV";
-        }
-    }
+    function typeNum(n) { if(powerOn) { currentInput += n; textLayer.innerHTML = "Eingabe: " + currentInput; } }
 </script>
-
 </body>
 </html>
