@@ -20,15 +20,22 @@
             font-weight: bold; font-size: 2rem; color: #222; display: none; z-index: 15;
         }
 
-        /* Rechter Infoblock */
+        /* Deine Idealwerte für die Seitenleiste */
         #right-info-block {
-            position: absolute; top: 12%; right: 2%; width: 30%; text-align: right;
-            font-weight: bold; font-size: 1.1rem; color: #222; display: none;
+            position: absolute; 
+            top: 0%; 
+            right: -12%; 
+            width: 100%; 
+            text-align: right;
+            font-weight: bold; 
+            font-size: 2rem; 
+            color: #222; 
+            display: none;
         }
 
-        /* Blink-Animation für unangemeldeten Zustand */
-        .blink { animation: blinker 1s linear infinite; }
-        @keyframes blinker { 50% { opacity: 0; } }
+        /* Hartes Blinken ohne Animation-Easing */
+        .blink { animation: step-blinker 1s steps(1) infinite; }
+        @keyframes step-blinker { 50% { visibility: hidden; } }
 
         #text-layer { font-weight: bold; font-size: 1.5rem; color: #222; text-align: center; }
 
@@ -41,7 +48,6 @@
         #btn-sos { top: 1%; left: 0.5%; width: 7.5%; height: 16%; }
         #btn-enter { top: 58.5%; left: 92.3%; width: 5.8%; height: 11.5%; }
 
-        /* Zifferntasten Reihe */
         .num-btn { top: 78%; width: 4.5%; height: 7.5%; }
     </style>
 </head>
@@ -61,7 +67,7 @@
         <div id="text-layer"></div>
         <div id="sos-container">
             <div id="sos-text">Zum Sprechen:<br>Sprechtaste!</div>
-            <img id="sos-pic" src="image_d97dfd.png" alt="SOS">
+            <img id="sos-pic" src="NothP.png" alt="SOS">
         </div>
     </div>
 
@@ -102,7 +108,7 @@
             document.getElementById('gsmr-img').src = 'Ausgang.png';
             textLayer.innerHTML = "SYSTEM STARTING...";
             setTimeout(() => {
-                textLayer.innerHTML = "GSM-R BEREIT";
+                textLayer.innerHTML = "";
                 topInfo.style.display = "block";
                 rightInfo.style.display = "block";
                 powerOn = true;
@@ -115,15 +121,15 @@
 
     function pressEnter() {
         if (!powerOn || zdRegistered) return;
-        // Anmeldung simulieren
+        // Anmeldung stoppt das Blinken
         zdRegistered = true;
         rightInfo.classList.remove('blink');
-        textLayer.innerHTML = "ZUG ANGEMELDET";
+        textLayer.innerHTML = "ZUG DATEN AKTIV";
     }
 
     function triggerEmergency() {
         if (!powerOn) return;
-        sosAudio.play();
+        sosAudio.play().catch(e => console.log("Audio Fehler"));
         textLayer.style.display = "none";
         sosContainer.style.display = "block";
     }
@@ -133,13 +139,14 @@
         zdRegistered = false;
         rightInfo.classList.add('blink');
         topInfo.style.display = rightInfo.style.display = sosContainer.style.display = "none";
+        textLayer.style.display = "block";
         textLayer.innerHTML = "";
         document.getElementById('gsmr-img').src = 'off.png';
         sosAudio.pause();
         sosAudio.currentTime = 0;
     }
 
-    function typeNum(n) { if(powerOn) { currentInput += n; textLayer.innerHTML = "Eingabe: " + currentInput; } }
+    function typeNum(n) { if(powerOn && !sosContainer.style.display === "block") { currentInput += n; textLayer.innerHTML = "Eingabe: " + currentInput; } }
 </script>
 </body>
 </html>
