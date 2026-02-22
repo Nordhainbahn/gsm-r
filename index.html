@@ -13,6 +13,7 @@
             margin: 0;
             color: white;
             font-family: Arial, sans-serif;
+            overflow: hidden;
         }
 
         .gsmr-wrapper {
@@ -24,85 +25,97 @@
             display: block;
             height: 600px;
             width: auto;
+            user-select: none;
         }
 
         /* Das Haupt-Display */
         #display {
             position: absolute;
             top: 25%;
-            left: 20%;
-            width: 61%;
-            height: 46%;
+            left: 20.5%;
+            width: 60.5%;
+            height: 45.5%;
             display: flex;
             justify-content: center;
             align-items: center;
             pointer-events: none;
             z-index: 10;
+            overflow: hidden;
         }
 
+        /* Standard-Text (Bereit / Starting) */
         #text-layer {
+            font-family: Arial, sans-serif;
             font-weight: bold;
             font-size: 1.5rem;
             color: #222;
             text-align: center;
         }
 
-        /* Notruf-Container Justierung */
+        /* Notruf-Container (Absolut positioniert für präzise Steuerung) */
         #sos-container {
-            display: none;
+            display: none; 
+            position: absolute;
             width: 100%;
             height: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: #222;
         }
 
-        /* Größerer Text, weiter rechts positioniert */
+        /* "Zum Sprechen Sprechtaste" - Links positioniert */
         #sos-text {
+            position: absolute;
+            top: 45%;
+            left: 5%;
+            font-family: Arial, sans-serif;
             font-weight: bold;
-            font-size: 1.4rem; /* Text vergrößert */
+            font-size: 1.3rem;
             line-height: 1.2;
+            color: #222;
             text-align: left;
-            margin-left: 15%; /* Weiter nach rechts geschoben */
-            margin-top: -5%;  /* Ein bisschen höher gesetzt */
         }
 
-        /* Bild höher und weiter rechts */
+        /* Piktogramm - Rechts und etwas höher */
         #sos-pic {
-            width: 185px; /* Wert aus deinem Screenshot */
+            position: absolute;
+            top: 22%;
+            right: 12%;
+            width: 185px; /* Dein Wert aus dem Screenshot */
             height: auto;
-            margin-right: 20px; /* Rechtsbündiger */
-            margin-top: -10%;   /* Höher positioniert */
         }
 
+        /* Button-Styles */
         .btn {
             position: absolute;
             cursor: pointer;
             z-index: 20;
             border: none;
-            background: transparent;
+            background: transparent; /* Für Echtbetrieb unsichtbar */
         }
 
-        /* Power-Knopf oben links */
+        /* Weißer Einschaltknopf oben links */
         #btn-power-main {
-            top: 5%;
-            left: 15%;
-            width: 22px;
-            height: 22px;
+            top: 7.5%;
+            left: 14.8%;
+            width: 18px;
+            height: 18px;
             background-color: white;
             border-radius: 50%;
-            box-shadow: 0 0 12px white;
+            box-shadow: 0 0 10px white;
         }
 
-        /* SOS-Taste */
+        /* SOS-Taste (Werte aus Screenshot) */
         #btn-sos {
-            top: 1%; left: 0.5%; width: 7.5%; height: 16%;
+            top: 1%;
+            left: 0.5%;
+            width: 7.5%;
+            height: 16%;
         }
 
-        /* E-Taste */
+        /* E-Taste (Werte aus Screenshot) */
         #btn-enter {
-            top: 58.5%; left: 92.3%; width: 5.8%; height: 11.5%;
+            top: 58.5%;
+            left: 92.3%;
+            width: 5.8%;
+            height: 11.5%;
         }
     </style>
 </head>
@@ -113,13 +126,14 @@
     
     <div id="display">
         <div id="text-layer"></div>
-        <div id="sos-container" style="display: none;">
+
+        <div id="sos-container">
             <div id="sos-text">Zum Sprechen:<br>Sprechtaste!</div>
             <img id="sos-pic" src="NothP.png" alt="SOS">
         </div>
     </div>
 
-    <button id="btn-power-main" class="btn" onclick="togglePower()"></button>
+    <button id="btn-power-main" class="btn" title="Einschalten" onclick="togglePower()"></button>
     <button id="btn-sos" class="btn" onclick="triggerEmergency()"></button>
     <button id="btn-enter" class="btn" onclick="pressEnter()"></button>
 </div>
@@ -137,13 +151,17 @@
 
     function togglePower() {
         if (booting) return;
+
         if (!powerOn) {
             booting = true;
-            img.src = 'Ausgang.png';
+            img.src = 'Ausgang.png'; //
+            
+            // Sicherstellen, dass alles auf Standard (Schwarz) steht
             sosContainer.style.display = "none";
             textLayer.style.display = "block";
             textLayer.style.color = "#222"; 
             textLayer.innerHTML = "SYSTEM STARTING...";
+            
             setTimeout(() => {
                 textLayer.innerHTML = "GSM-R BEREIT";
                 powerOn = true;
@@ -158,21 +176,27 @@
         powerOn = false;
         textLayer.innerHTML = "";
         sosContainer.style.display = "none";
-        img.src = 'off.png';
+        img.src = 'off.png'; //
+        
+        // Sound stoppen
         sosAudio.pause();
         sosAudio.currentTime = 0;
     }
 
     function triggerEmergency() {
         if (!powerOn) return;
-        sosAudio.play().catch(e => console.log("Audio-Fehler"));
+        
+        // Sound abspielen
+        sosAudio.play().catch(e => console.log("Audio-Fehler: Datei fehlt oder Browser-Sperre."));
+        
+        // UI umschalten: Normaler Text weg, SOS-Layout her
         textLayer.style.display = "none";
-        sosContainer.style.display = "flex";
+        sosContainer.style.display = "block";
     }
 
     function pressEnter() {
         if (!powerOn) return;
-        console.log("Eingabe");
+        console.log("Eingabe bestätigt (E-Taste)");
     }
 </script>
 
